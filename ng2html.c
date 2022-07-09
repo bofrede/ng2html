@@ -173,7 +173,7 @@ void LoadConfig( void );
 
 /* Variable settings that affect the look of the generated HTML. */
 
-char *pszBodyString = "<BODY>";
+char *pszBodyString = "<body>";
 int  iFrames        = FALSE;
 char *pszFrameCols  = "30%,70%";
 
@@ -238,10 +238,10 @@ void WriteInfo( NGTIDYHEAD *ngHeader )
 
     if ( f != NULL )
     {
-	SafePrint( f, "<HTML>\n<HEAD>\n<TITLE>%s - Information</TITLE>\n"
-                   "</HEAD>\n%s\n<PRE>  Title: %s\nCredits: %s\n"
+	SafePrint( f, "<!doctype html>\n<html lang=\"en\">\n<head>\n<title>%s - Information</title>\n"
+                   "</head>\n%s\n<pre>  Title: %s\nCredits: %s\n"
                    "         %s\n         %s\n         %s\n"
-                   "         %s\n</PRE>\n</BODY>\n</HTML>\n",
+                   "         %s\n</pre>\n</body>\n</html>\n",
                    ngHeader->szTitle,
                    pszBodyString,
                    ngHeader->szTitle,
@@ -279,13 +279,13 @@ void WriteMenu( FILE *fleNG, NGTIDYHEAD *ngHeader )
     if ( fMenu != NULL && ( fFrameMenu != NULL || !iFrames ) )
     {
 	StandardHeader( fMenu, ngHeader, "Menu" );
-        SafePrint( fMenu, "<OL>\n" );
+        SafePrint( fMenu, "<ol>\n" );
 
 	if ( iFrames )
 	{
-	    SafePrint( fFrameMenu, "<HTML>\n<HEAD><TITLE>%s - Menu</TITLE>"
-                       "</HEAD>\n<FRAMESET COLS=\"%s\">\n<NOFRAMES>\n%s\n"
-                       "<OL>\n", ngHeader->szTitle, pszFrameCols,
+	    SafePrint( fFrameMenu, "<html lang=\"en\">\n<head><title>%s - Menu</title>"
+                       "</head>\n<frameset cols=\"%s\">\n<noframes>\n%s\n"
+                       "<ol>\n", ngHeader->szTitle, pszFrameCols,
                        pszBodyString );
 	}
 
@@ -314,15 +314,15 @@ void WriteMenu( FILE *fleNG, NGTIDYHEAD *ngHeader )
 	    }
 	} while ( iID != 5 && i != ngHeader->usMenuCount );
 
-	SafePrint( fMenu, "</OL>\n" );
+	SafePrint( fMenu, "</ol>\n" );
 	StandardFooter( fMenu );
 
 	if ( iFrames )
 	{
-	    SafePrint( fFrameMenu, "</OL>\n</NOFRAMES>\n"
-                       "<FRAME SRC=\"" NG_FMENU "\" NAME=\"menu\">\n"
-                       "<FRAME SRC=\"" NG_INFO  "\" NAME=\"display\">\n"
-                       "</FRAMESET>\n</HTML>\n" );
+	    SafePrint( fFrameMenu, "</ol>\n</noframes>\n"
+                       "<frame src=\"" NG_FMENU "\" name=\"menu\">\n"
+                       "<frame src=\"" NG_INFO  "\" name=\"display\">\n"
+                       "</frameset>\n</html>\n" );
 	}
     }
     else
@@ -372,8 +372,8 @@ void WriteDropMenu( FILE *fleNG, FILE *fleMenu )
 
     GetStrZ( fleNG, szTitle, 40 );
 
-    SafePrint( fleMenu, "<H2><LI>%s</LI></H2><P>\n", szTitle );
-    SafePrint( fleMenu, "<OL>\n" );
+    SafePrint( fleMenu, "<li>%s\n", szTitle );
+    SafePrint( fleMenu, "<ol>\n" );
 
     for ( i = 1; i < iItems; i++ )
     {
@@ -384,13 +384,13 @@ void WriteDropMenu( FILE *fleNG, FILE *fleMenu )
 	    strcpy( szTitle, "(No Text For Menu Item)" );
 	}
 
-	SafePrint( fleMenu, "<H3><LI><A HREF=\"" NG_PREFIX NG_ID
-                   NG_SUFFIX "\"%s>%s</H3></A></LI><P>\n",
-                   lpOffsets[ i - 1 ], iFrames ? " TARGET=\"display\" " : "",
+	SafePrint( fleMenu, "<li><a href=\"" NG_PREFIX NG_ID
+                   NG_SUFFIX "\"%s>%s</a></li>\n",
+                   lpOffsets[ i - 1 ], iFrames ? " target=\"display\" " : "",
                    szTitle );
     }
 
-    SafePrint( fleMenu, "</OL>\n" );
+    SafePrint( fleMenu, "</ol></li>\n" );
 
     (void) getc( fleNG );
 
@@ -480,8 +480,8 @@ void WriteShort( FILE *fleNG, long lOffset, NGTIDYHEAD *pHead )
 
 	if ( lParent > 0 && uParentLine < 0xFFFF )
 	{
-	    SafePrint( f, "<A HREF=\"" NG_PREFIX NG_ID NG_SUFFIX "\">"
-                       "[^^Up^^]</A>\n", lParent );
+	    SafePrint( f, "<a href=\"" NG_PREFIX NG_ID NG_SUFFIX "\">"
+                       "[^^Up^^]</a>\n", lParent );
 	}
 	else
 	{
@@ -490,17 +490,17 @@ void WriteShort( FILE *fleNG, long lOffset, NGTIDYHEAD *pHead )
 
 	StandardButtons( f );
 
-	SafePrint( f, "<HR>\n<PRE>\n" );
+	SafePrint( f, "<hr>\n<pre>\n" );
 
 	for ( i = 0; i < iItems; i++ )
 	{
 	    GetStrZ( fleNG, szBuffer, sizeof( szBuffer ) );
 	    if ( plOffsets[ i ] > 0 )
 	    {
-		SafePrint( f, "<A HREF=\"" NG_PREFIX NG_ID NG_SUFFIX "\">",
+		SafePrint( f, "<a href=\"" NG_PREFIX NG_ID NG_SUFFIX "\">",
                            plOffsets[ i ] );
 		ExpandText( f, szBuffer );
-		SafePrint( f, "</A>\n" );
+		SafePrint( f, "</a>\n" );
 	    }
 	    else
 	    {
@@ -511,7 +511,7 @@ void WriteShort( FILE *fleNG, long lOffset, NGTIDYHEAD *pHead )
 
 	free( plOffsets );
 
-	SafePrint( f, "</PRE>\n" );
+	SafePrint( f, "</pre>\n" );
 
 	StandardFooter( f );
 
@@ -567,8 +567,8 @@ void WriteLong( FILE *fleNG, long lOffset, NGTIDYHEAD *pHead )
 
 	if ( lPrevious )
 	{
-	    SafePrint( f, "<A HREF=\"" NG_PREFIX NG_ID NG_SUFFIX
-                       "\">[&lt;&lt;Previous Entry]</A>\n", lPrevious );
+	    SafePrint( f, "<a href=\"" NG_PREFIX NG_ID NG_SUFFIX
+                       "\">[&lt;&lt;Previous Entry]</a>\n", lPrevious );
 	}
 	else
 	{
@@ -577,8 +577,8 @@ void WriteLong( FILE *fleNG, long lOffset, NGTIDYHEAD *pHead )
 
 	if ( lParent > 0 && uParentLine < 0xFFFF )
 	{
-	    SafePrint( f, "<A HREF=\"" NG_PREFIX NG_ID NG_SUFFIX
-                       "\">[^^Up^^]</A>\n", lParent );
+	    SafePrint( f, "<a href=\"" NG_PREFIX NG_ID NG_SUFFIX
+                       "\">[^^Up^^]</a>\n", lParent );
 	}
 	else
 	{
@@ -587,8 +587,8 @@ void WriteLong( FILE *fleNG, long lOffset, NGTIDYHEAD *pHead )
 
 	if ( lNext )
 	{
-	    SafePrint( f, "<A HREF=\"" NG_PREFIX NG_ID NG_SUFFIX
-                       "\">[Next Entry&gt;&gt;]</A>\n", lNext );
+	    SafePrint( f, "<a href=\"" NG_PREFIX NG_ID NG_SUFFIX
+                       "\">[Next Entry&gt;&gt;]</a>\n", lNext );
 	}
 	else
 	{
@@ -597,7 +597,7 @@ void WriteLong( FILE *fleNG, long lOffset, NGTIDYHEAD *pHead )
 
 	StandardButtons( f );
 
-	SafePrint( f, "<HR>\n<PRE>\n" );
+	SafePrint( f, "<hr>\n<pre>\n" );
 
 	for ( i = 0; i < iItems; i++ )
 	{
@@ -606,11 +606,11 @@ void WriteLong( FILE *fleNG, long lOffset, NGTIDYHEAD *pHead )
 	    SafePrint( f, "\n" );
 	}
 
-	SafePrint( f, "</PRE>\n" );
+	SafePrint( f, "</pre>\n" );
 
 	if ( iSeeAlsos )
 	{
-	    SafePrint( f, "<HR>\n<B>See Also:</B>\n" );
+	    SafePrint( f, "<hr>\n<b>See Also:</b>\n" );
 
 	    iCnt      = ReadWord( fleNG );
 	    plOffsets = (long *) calloc( iCnt, sizeof( long ) );
@@ -636,8 +636,8 @@ void WriteLong( FILE *fleNG, long lOffset, NGTIDYHEAD *pHead )
 		if ( i < 20 )
 		{
 		    GetStrZ( fleNG, szBuffer, sizeof( szBuffer ) );
-		    SafePrint( f, "<A HREF=\"" NG_PREFIX NG_ID NG_SUFFIX
-                               "\">%s</A>\n", plOffsets[ i ], szBuffer );
+		    SafePrint( f, "<a href=\"" NG_PREFIX NG_ID NG_SUFFIX
+                               "\">%s</a>\n", plOffsets[ i ], szBuffer );
 		}
 	    }
 	}
@@ -849,7 +849,7 @@ void ExpandText( FILE *f, char *pszText )
 		break;
 	    case 'b' :
 	    case 'B' :
-		SafePrint( f, iBold ? "</B>" : "<B>" );
+		SafePrint( f, iBold ? "</b>" : "<b>" );
 		iBold = !iBold;
 		break;
 	    case 'c' :
@@ -860,8 +860,8 @@ void ExpandText( FILE *f, char *pszText )
 		break;
 	    case 'n' :
 	    case 'N' :
-		if ( iBold ) SafePrint( f, "</B>" );
-		if ( iUnder ) SafePrint( f, "</U>" );
+		if ( iBold ) SafePrint( f, "</b>" );
+		if ( iUnder ) SafePrint( f, "</u>" );
 		iBold = 0;
 		iUnder = 0;
 		break;
@@ -871,7 +871,7 @@ void ExpandText( FILE *f, char *pszText )
 		break;
 	    case 'u' :
 	    case 'U' :
-		SafePrint( f, iUnder ? "</U>" : "<U>" );
+		SafePrint( f, iUnder ? "</u>" : "<u>" );
 		iUnder = !iUnder;
 		break;
 	    case '^' :
@@ -899,8 +899,8 @@ void ExpandText( FILE *f, char *pszText )
 	++psz;
     }
 
-    if ( iBold ) SafePrint( f, "</B>" );
-    if ( iUnder ) SafePrint( f, "</U>" );
+    if ( iBold ) SafePrint( f, "</b>" );
+    if ( iUnder ) SafePrint( f, "</u>" );
 }
 
 /*
@@ -963,10 +963,10 @@ int Hex2Byte( char *psz )
 
 void StandardButtons( FILE *f )
 {
-    SafePrint( f, "<A HREF=\"%s\" %s>[Menu]</A>\n",
+    SafePrint( f, "<a href=\"%s\" %s>[Menu]</a>\n",
                iFrames ? NG_FMENU : NG_MENU,
-               iFrames ? "TARGET=\"menu\"" : "" );
-    SafePrint( f, "<A HREF=\"" NG_INFO "\">[About The Guide]</A>\n" );
+               iFrames ? "target=\"menu\"" : "" );
+    SafePrint( f, "<a href=\"" NG_INFO "\">[About The Guide]</a>\n" );
 }
 
 /*
@@ -974,7 +974,7 @@ void StandardButtons( FILE *f )
 
 void StandardHeader( FILE *f, NGTIDYHEAD *pHead, char *pszPageType )
 {
-    SafePrint( f, "<HTML>\n<HEAD><TITLE>%s - %s</TITLE></HEAD>\n%s\n\n",
+    SafePrint( f, "<!doctype html>\n<html lang=\"en\">\n<head>\n<title>%s - %s</title>\n</head>\n%s\n\n",
                pHead->szTitle, pszPageType, pszBodyString );
 }
 
@@ -984,12 +984,12 @@ void StandardHeader( FILE *f, NGTIDYHEAD *pHead, char *pszPageType )
 void StandardFooter( FILE *f )
 {
 #ifndef NO_ADVERT
-    SafePrint( f, "<HR>\nThis page created by ng2html v" NG2HTML_VERSION
+    SafePrint( f, "<hr>\nThis page created by ng2html v" NG2HTML_VERSION
                ", the Norton guide to HTML conversion utility.\n"
-               "Written by <A HREF=\"http://www.acemake.com/hagbard\">"
-               "Dave Pearson</A>\n<HR>" );
+               "Written by <a href=\"http://www.acemake.com/hagbard\">"
+               "Dave Pearson</a>\n<hr>" );
 #endif
-    SafePrint( f, "\n</BODY>\n</HTML>\n" );
+    SafePrint( f, "\n</body>\n</html>\n" );
 }
 
 /*
