@@ -984,10 +984,10 @@ void StandardHeader( FILE *f, NGTIDYHEAD *pHead, char *pszPageType )
 void StandardFooter( FILE *f )
 {
 #ifndef NO_ADVERT
-    SafePrint( f, "<hr>\nThis page created by ng2html v" NG2HTML_VERSION
+    SafePrint( f, "<footer>\n<p>This page created by ng2html v" NG2HTML_VERSION
                ", the Norton guide to HTML conversion utility.\n"
-               "Written by <a href=\"http://www.acemake.com/hagbard\">"
-               "Dave Pearson</a>\n<hr>" );
+               "Written by <a href=\"http://davep.org/norton-guides/\">"
+               "Dave Pearson</a>.</p>\n</footer>" );
 #endif
     SafePrint( f, "\n</body>\n</html>\n" );
 }
