@@ -138,7 +138,7 @@ void LoadConfig( void );
 
 /* The version number of ng2html. */
 
-#define NG2HTML_VERSION "1.05"
+#define NG2HTML_VERSION "2.0 ß1"
 
 /* If you don't want my "advert" at the bottom of your pages, uncomment
    the following: */
@@ -152,12 +152,12 @@ void LoadConfig( void );
 
 /* The bits for making up the pages. */
 
-#define NG_PREFIX "ng"              /* Prefix for the pages in the guides. */
-#define NG_ID     "%lx"             /* Used to generate guide page names. */
-#define NG_SUFFIX ".html"           /* Suffix for the file names. */
-#define NG_MENU   "menu" NG_SUFFIX  /* Name of the menu page. */
-#define NG_INFO   "info" NG_SUFFIX  /* Name of the info/about page. */
-#define NG_FMENU  "fmenu" NG_SUFFIX /* Name of the frames enabled menu. */
+#define NG_PREFIX "ng"               /* Prefix for the pages in the guides. */
+#define NG_ID     "%lx"              /* Used to generate guide page names. */
+#define NG_SUFFIX ".html"            /* Suffix for the file names. */
+#define NG_MENU   "index" NG_SUFFIX  /* Name of the menu page. */
+#define NG_INFO   "info" NG_SUFFIX   /* Name of the info/about page. */
+#define NG_FMENU  "findex" NG_SUFFIX /* Name of the frames enabled menu. */
 
 /* Decrypt the NGs "encryption". */
 
@@ -238,18 +238,21 @@ void WriteInfo( NGTIDYHEAD *ngHeader )
 
     if ( f != NULL )
     {
-	SafePrint( f, "<!doctype html>\n<html lang=\"en\">\n<head>\n<title>%s - Information</title>\n"
-                   "</head>\n%s\n<pre>  Title: %s\nCredits: %s\n"
+	StandardHeader( f, ngHeader, "Information" );
+	SafePrint( f, "<div id=\"Wrapper\">\n"
+                   "<header><div>%s</div></header>\n"
+                   "<main>\n<div id=\"Content\">\n"
+                   "<h1>Credits</h1>\n"
+                   "<pre>         %s\n"
                    "         %s\n         %s\n         %s\n"
-                   "         %s\n</pre>\n</body>\n</html>\n",
-                   ngHeader->szTitle,
-                   pszBodyString,
+                   "         %s\n</pre>\n</div>\n</main>\n",
                    ngHeader->szTitle,
                    ngHeader->szCredits[ 0 ],
                    ngHeader->szCredits[ 1 ],
                    ngHeader->szCredits[ 2 ],
                    ngHeader->szCredits[ 3 ],
                    ngHeader->szCredits[ 4 ] );
+	StandardFooter( f );
 	fclose( f );
 	printf( "Found header details, " NG_INFO " written\n" );
     }
@@ -278,12 +281,16 @@ void WriteMenu( FILE *fleNG, NGTIDYHEAD *ngHeader )
 
     if ( fMenu != NULL && ( fFrameMenu != NULL || !iFrames ) )
     {
-	StandardHeader( fMenu, ngHeader, "Menu" );
-        SafePrint( fMenu, "<ol>\n" );
+		StandardHeader( fMenu, ngHeader, "Menu" );
+		SafePrint( fMenu, "<div id=\"Wrapper\">\n");
+        SafePrint( fMenu, "<header><div>%s</div></header>\n", ngHeader->szTitle );
+        SafePrint( fMenu, "<div id=\"Content\">\n<main>\n<h1>Table of content</h1>\n");
+	    SafePrint( fMenu, "<ol>\n" );
 
 	if ( iFrames )
 	{
-	    SafePrint( fFrameMenu, "<html lang=\"en\">\n<head><title>%s - Menu</title>"
+	    SafePrint( fFrameMenu, "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Frameset//EN\" \"http://www.w3.org/TR/html4/frameset.dtd\">\n"
+	                   "<html lang=\"en\">\n<head><meta charset=\"utf-8\">\n<title>%s - Menu</title>"
                        "</head>\n<frameset cols=\"%s\">\n<noframes>\n%s\n"
                        "<ol>\n", ngHeader->szTitle, pszFrameCols,
                        pszBodyString );
@@ -315,6 +322,7 @@ void WriteMenu( FILE *fleNG, NGTIDYHEAD *ngHeader )
 	} while ( iID != 5 && i != ngHeader->usMenuCount );
 
 	SafePrint( fMenu, "</ol>\n" );
+	SafePrint( fMenu, "</main>\n</div>" );
 	StandardFooter( fMenu );
 
 	if ( iFrames )
@@ -459,6 +467,9 @@ void WriteShort( FILE *fleNG, long lOffset, NGTIDYHEAD *pHead )
 
 	StandardHeader( f, pHead, "Short Entry" );
 
+	SafePrint( f, "<div id=\"Wrapper\">\n");
+    SafePrint( f, "<header><div>%s</div></header>\n", pHead->szTitle );
+
 	(void) ReadWord( fleNG );
 	iItems = ReadWord( fleNG );
 	(void) ReadWord( fleNG );
@@ -478,19 +489,22 @@ void WriteShort( FILE *fleNG, long lOffset, NGTIDYHEAD *pHead )
 	    plOffsets[ i ] = ReadLong( fleNG );
 	}
 
+    SafePrint( f, "<nav>\n" );
 	if ( lParent > 0 && uParentLine < 0xFFFF )
 	{
 	    SafePrint( f, "<a href=\"" NG_PREFIX NG_ID NG_SUFFIX "\">"
-                       "[^^Up^^]</a>\n", lParent );
+                       "Up</a>\n", lParent );
 	}
 	else
 	{
-	    SafePrint( f, "[^^Up^^]\n" );
+	    SafePrint( f, "Up\n" );
 	}
 
 	StandardButtons( f );
+    SafePrint( f, "</nav>\n" );
 
-	SafePrint( f, "<hr>\n<pre>\n" );
+	SafePrint( f, "<div id=\"Content\">\n");
+	SafePrint( f, "<main>\n<pre>\n" );
 
 	for ( i = 0; i < iItems; i++ )
 	{
@@ -511,7 +525,7 @@ void WriteShort( FILE *fleNG, long lOffset, NGTIDYHEAD *pHead )
 
 	free( plOffsets );
 
-	SafePrint( f, "</pre>\n" );
+	SafePrint( f, "</pre>\n</main>\n</div>\n");
 
 	StandardFooter( f );
 
@@ -549,6 +563,8 @@ void WriteLong( FILE *fleNG, long lOffset, NGTIDYHEAD *pHead )
     if ( ( f = fopen( szName, "w" ) ) != NULL )
     {
 	StandardHeader( f, pHead, "Long Entry" );
+	SafePrint( f, "<div id=\"Wrapper\">\n");
+    SafePrint( f, "<header><div>%s</div></header>\n", pHead->szTitle );
 
 	(void) ReadWord( fleNG );
 
@@ -565,39 +581,41 @@ void WriteLong( FILE *fleNG, long lOffset, NGTIDYHEAD *pHead )
 	lPrevious = ( lPrevious == -1L ? 0L : lPrevious );
 	lNext     = ( lNext == -1L ? 0L : lNext );
 
+    SafePrint( f, "<nav>\n" );
 	if ( lPrevious )
 	{
 	    SafePrint( f, "<a href=\"" NG_PREFIX NG_ID NG_SUFFIX
-                       "\">[&lt;&lt;Previous Entry]</a>\n", lPrevious );
+                       "\">Previous Entry</a>\n", lPrevious );
 	}
 	else
 	{
-	    SafePrint( f, "[&lt;&lt;Previous Entry]\n" );
+	    SafePrint( f, "Previous Entry\n" );
 	}
 
 	if ( lParent > 0 && uParentLine < 0xFFFF )
 	{
 	    SafePrint( f, "<a href=\"" NG_PREFIX NG_ID NG_SUFFIX
-                       "\">[^^Up^^]</a>\n", lParent );
+                       "\">Up</a>\n", lParent );
 	}
 	else
 	{
-	    SafePrint( f, "[^^Up^^]\n" );
+	    SafePrint( f, "Up\n" );
 	}
 
 	if ( lNext )
 	{
 	    SafePrint( f, "<a href=\"" NG_PREFIX NG_ID NG_SUFFIX
-                       "\">[Next Entry&gt;&gt;]</a>\n", lNext );
+                       "\">Next Entry</a>\n", lNext );
 	}
 	else
 	{
-	    SafePrint( f, "[Next Entry&gt;&gt;]\n" );
+	    SafePrint( f, "Next Entry\n" );
 	}
 
 	StandardButtons( f );
+    SafePrint( f, "</nav>\n" );
 
-	SafePrint( f, "<hr>\n<pre>\n" );
+	SafePrint( f, "<div id=\"Content\">\n<main>\n<pre>\n" );
 
 	for ( i = 0; i < iItems; i++ )
 	{
@@ -606,11 +624,11 @@ void WriteLong( FILE *fleNG, long lOffset, NGTIDYHEAD *pHead )
 	    SafePrint( f, "\n" );
 	}
 
-	SafePrint( f, "</pre>\n" );
+	SafePrint( f, "</pre>\n</main>\n" );
 
 	if ( iSeeAlsos )
 	{
-	    SafePrint( f, "<hr>\n<b>See Also:</b>\n" );
+	    SafePrint( f, "<aside>\n<h2>See Also</h2>\n<ul>\n" );
 
 	    iCnt      = ReadWord( fleNG );
 	    plOffsets = (long *) calloc( iCnt, sizeof( long ) );
@@ -636,11 +654,13 @@ void WriteLong( FILE *fleNG, long lOffset, NGTIDYHEAD *pHead )
 		if ( i < 20 )
 		{
 		    GetStrZ( fleNG, szBuffer, sizeof( szBuffer ) );
-		    SafePrint( f, "<a href=\"" NG_PREFIX NG_ID NG_SUFFIX
-                               "\">%s</a>\n", plOffsets[ i ], szBuffer );
+		    SafePrint( f, "<li><a href=\"" NG_PREFIX NG_ID NG_SUFFIX
+                               "\">%s</a></li>\n", plOffsets[ i ], szBuffer );
 		}
 	    }
+	    SafePrint( f, "</ul>\n</aside>\n" );
 	}
+    SafePrint( f, "</div>\n" );
 
 	StandardFooter( f );
 
@@ -963,10 +983,10 @@ int Hex2Byte( char *psz )
 
 void StandardButtons( FILE *f )
 {
-    SafePrint( f, "<a href=\"%s\" %s>[Menu]</a>\n",
+    SafePrint( f, "<a href=\"%s\" %s>Menu</a>\n",
                iFrames ? NG_FMENU : NG_MENU,
                iFrames ? "target=\"menu\"" : "" );
-    SafePrint( f, "<a href=\"" NG_INFO "\">[About The Guide]</a>\n" );
+    SafePrint( f, "<a href=\"" NG_INFO "\">About The Guide</a>\n" );
 }
 
 /*
@@ -974,8 +994,8 @@ void StandardButtons( FILE *f )
 
 void StandardHeader( FILE *f, NGTIDYHEAD *pHead, char *pszPageType )
 {
-    SafePrint( f, "<!doctype html>\n<html lang=\"en\">\n<head>\n<title>%s - %s</title>\n</head>\n%s\n\n",
-               pHead->szTitle, pszPageType, pszBodyString );
+    SafePrint( f, "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>%s - %s</title>\n<link rel=\"stylesheet\" href=\"../ng2html.css\">\n</head>\n%s\n",
+               	pHead->szTitle, pszPageType, pszBodyString );
 }
 
 /*
@@ -984,12 +1004,12 @@ void StandardHeader( FILE *f, NGTIDYHEAD *pHead, char *pszPageType )
 void StandardFooter( FILE *f )
 {
 #ifndef NO_ADVERT
-    SafePrint( f, "<footer>\n<p>This page created by ng2html v" NG2HTML_VERSION
+    SafePrint( f, "<footer><div>\n<p>This page created by ng2html v" NG2HTML_VERSION
                ", the Norton guide to HTML conversion utility.\n"
                "Written by <a href=\"http://davep.org/norton-guides/\">"
-               "Dave Pearson</a>.</p>\n</footer>" );
+               "Dave Pearson</a>.</p>\n</div></footer>" );
 #endif
-    SafePrint( f, "\n</body>\n</html>\n" );
+    SafePrint( f, "\n</div>\n</body>\n</html>\n" );
 }
 
 /*
